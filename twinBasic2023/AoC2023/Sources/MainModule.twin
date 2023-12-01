@@ -1,0 +1,22 @@
+Module MainModule
+
+    Option Explicit
+
+       Public Const AoCData As String = "C:\Users\slayc\source\repos\AdventOfCode\RawData"
+    
+       Public Sub Main()
+    
+           Dim myDuration As Variant = Timer
+
+           Day01.Execute
+           
+           myDuration = Timer - myDuration
+           If myDuration < 1 Then
+                Debug.Print "Executed in " & myDuration * 1000 & " milliseconds"
+            Else
+                Debug.Print "Executed in " & myDuration & " seconds"
+           End If
+        
+       End Sub
+
+End Module

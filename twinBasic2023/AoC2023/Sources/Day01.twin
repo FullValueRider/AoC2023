@@ -1,0 +1,108 @@
+'========1=========2=========3=========4=========5=========6=========7=========8=========9=========A=========B=========
+Class Day01
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today             As String = "\2023\Day01.txt"
+    
+    Private Type State
+        Data                            As Variant
+    End Type
+
+    Private s                           As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+
+        Initialise
+        Dim myResult As Long = 0
+        Dim myItem As Variant
+        For Each myItem In s.Data
+        	Dim myTrim As String = Strs.Trimmer(VBA.CStr(myItem), Chars.Lower)
+            myResult += VBA.CLng(VBA.Left$(myTrim, 1) & VBA.Right(myTrim, 1))
+        Next
+        
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "54708", myResult)
+        
+    End Sub
+    
+
+    Private Sub Part02()
+    	
+        ' in part 2 we have the situation 'eighttwo' which means that
+        ' the replaced data is eigh2 because two gets replaced before 8
+        Initialise
+        
+        Dim myResult As Long = 0
+        Dim myIndex As Long
+        Dim myItem As Variant
+        For Each myItem In s.Data
+        	
+        	Dim myInStr As String = VBA.CStr(myItem)
+            Dim myOutStr As String = vbNullString
+            
+            For myIndex = 1 To VBA.Len(myItem) - 2
+            	myOutStr & = VBA.Mid(myInStr, myIndex, 1)
+                Select Case VBA.Right$(myOutStr, 1)
+                	Case "o"
+                        If VBA.Mid$(myInStr, myIndex, 3) = "one" Then
+                        	myOutStr &= "1"
+                        End If
+                    Case "t"
+                        If VBA.Mid$(myInStr, myIndex, 3) = "two" Then
+                        	myOutStr &= "2"
+                        ElseIf VBA.Mid$(myInStr, myIndex, 5) = "three" Then
+                        	myOutStr &= "3"
+                        End If
+                    Case "f"
+                        If VBA.Mid$(myInStr, myIndex, 4) = "four" Then
+                            myOutStr &= "4"
+                        ElseIf VBA.Mid$(myInStr, myIndex, 4) = "five" Then
+                            myOutStr &= "5"
+                        End If
+                    Case "s"
+                        If VBA.Mid$(myInStr, myIndex, 3) = "six" Then
+                            myOutStr &= "6"
+                        ElseIf VBA.Mid$(myInStr, myIndex, 5) = "seven" Then
+                            myOutStr &= "7"
+                        End If
+                    Case "e"
+                        If VBA.Mid$(myInStr, myIndex, 5) = "eight" Then
+                            myOutStr &= "8"
+                        End If
+                    Case "n"
+                        If VBA.Mid$(myInStr, myIndex, 4) = "nine" Then
+                            myOutStr &= "9"
+                        End If
+                    Case "z"
+                        If VBA.Mid$(myInStr, myIndex, 4) = "zero" Then
+                            myOutStr &= "0"
+                        End If
+                End Select
+            Next
+            myOutStr &= VBA.Right$(myInStr, 2)
+            Dim myTrim As String = Strs.Trimmer(myOutStr, Chars.Lower)
+            
+            myResult += VBA.CLng(VBA.Left$(myTrim, 1) & VBA.Right$(myTrim, 1))
+        	
+        Next
+        
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "212520", myResult
+
+    End Sub
+
+    Private Sub Initialise()
+    	Debug.Print AoCData & Today
+        s.Data = GetFileAsArrayOfStrings(AoCData & Today)
+     End Sub
+
+End Class
