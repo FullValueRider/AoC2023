@@ -17,7 +17,8 @@ var s                                           : State
 
 proc initialise() =
     s = State(Data:  (AoCData & Today).readFile.split("\r\n"))
-    
+
+ 
 proc part01() =
     initialise()
     var myResult:int = 0
