@@ -8,7 +8,8 @@ Module MainModule
     
            Dim myDuration As Variant = Timer
 
-           Day01.Execute
+           'Day01.Execute
+           Day02.Execute
            
            myDuration = Timer - myDuration
            If myDuration < 1 Then

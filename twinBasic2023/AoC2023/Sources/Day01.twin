@@ -96,7 +96,7 @@ Class Day01
         	
         Next
         
-        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "212520", myResult
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "54087", myResult
 
     End Sub
 
