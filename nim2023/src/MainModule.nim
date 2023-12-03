@@ -1,8 +1,9 @@
 import times
 
+
 #import Day01
-import Day02
-#import Day03_2023
+#import Day02
+import Day03
 #import Day04_2023
 #import Day05_2023
 #import Day06_2023
@@ -28,13 +29,13 @@ import Day02
 #import Day25_2023
 
 
-
 when isMainModule:
+
   var myTime:float = cpuTime()
 
   #Day01.execute()
-  Day02.execute()
-  #Day03_2023.execute()
+  #Day02.execute()
+  Day03.execute()
   #Day04_2023.execute()
   #Day05_2023.execute()
   #Day06_2023.execute()
