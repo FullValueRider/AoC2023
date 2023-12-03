@@ -32,7 +32,7 @@ let
 
 var 
     s                                           : State
-    numerals                                    :seq[char] = "0123456789".toseq
+    #numerals                                    :seq[char] = "0123456789".toseq
     
 proc initialise() =
 
@@ -51,7 +51,7 @@ proc initialise() =
         for forChar in forRow:
             if forChar == PERIOD:
                 continue
-            if forChar in numerals:
+            if forChar.isDigit:
                 continue
             if forChar in s.Symbols:
                 continue
@@ -89,7 +89,7 @@ proc getNumberList(): seq[NumberLocation]   =
                     myStart = 0
                     myInNumber = false
             else:
-                if  myChar in numerals:
+                if  myChar.isDigit:
                     myStart = mySecond
                     myInNumber = true
         
@@ -151,14 +151,14 @@ proc parseNumberv2( ipFirst: int, ipSecond: var int): int =
     var myNumber:string = $s.Data[ipFirst][ipSecond]
     var myLeft: int = ipSecond
 
-    while s.Data[ipFirst][myLeft - 1] in numerals :
+    while s.Data[ipFirst][myLeft - 1].isDigit :
         myLeft -= 1
         myNumber = $s.Data[ipFirst][myLeft] & myNumber
         
         if myLeft - 1 < s.SecondMin:
             break
 
-    while  numerals.contains(s.Data[ipFirst][ipSecond + 1]):
+    while  s.Data[ipFirst][ipSecond + 1].isDigit:
         ipSecond   += 1
         myNumber &= $s.Data[ipFirst][ipSecond]
         
@@ -186,7 +186,7 @@ proc gearRatio( ipSeq: GearLocation): int =
         while mySecond <= mySecondEnd:
 
             var myChar = s.Data[myFirst][mySecond]
-            if numerals.contains(myChar):
+            if myChar.isDigit:
                 myGears.add( parseNumberv2( myFirst,  mySecond))
 
             mySecond += 1
