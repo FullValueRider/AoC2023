@@ -9,9 +9,10 @@ I'm not a professional programmer (and never was).  I worked with technical docu
 
 My VBA (now twinBasic) solutions generally come first and then translated to other languages, so please don't expect other languages to good idiomatic exmaples.  
 Now I'm crinkley and tossed on the scrapheap of life, its more about stopping my brain from fossilising than anything else.
-## Timings in milliseconds  
+## Timings in milliseconds(ms) or Seconds (s) ??or minutes (m)  
 |Day|twinBasic|Nim|  
 |--------|--------|--------|  
-|1|19.5|47|  
-|2|7.8|47|  
-|3|265|29|
+|1|19.5 ms|47 ms|  
+|2|7.8 ms|47 ms|  
+|3|265 ms|29 ms|
+|4|265 s| ?? |
