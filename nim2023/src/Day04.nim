@@ -19,19 +19,25 @@ proc initialise() =
     var myData =(AoCData & Today)
         .lines
         .toSeq
-        .mapIt(it.multireplace(("   "," "),("  "," "),(": ","|"), (" | ","|")))
+        .mapIt(it.replace("   "," "))
+        .mapIt(it.replace("  "," "))
+        .mapIt(it.replace(": ","|"))
+        .mapIt(it.replace("| ","|"))
+        .mapIt(it.replace(" |","|"))
+        .mapIt(it.replace(" | ","|"))
         .mapIt(it.split("|"))
-    echo fmt"{myData[0]}"
-    echo fmt"{myData.len}"
-    
+    #echo fmt"{myData}"
+
     s= State(Data : initOrderedTable[string,seq[seq[string]]]())
     for myCard in myData:
-        s.Data[myCard[0].replace("  "," ")] = @[myCard[1].split(" "), myCard[2].split(" ")]
-        # echo fmt" myCard {myCard[0]}, s.Data[myCard[0]] {s.Data[myCard[0]]}"
         
+        s.Data[myCard[0]] = @[myCard[1].split(" "), myCard[2].split(" ")]
+        # echo fmt" myCard {myCard[0]}, s.Data[myCard[0]] {s.Data[myCard[0]]}"
+       
  
 proc winningNumbers( ipSeq: seq[seq[string]]): int =
-    result = 0
+    result = 0.int
+    
     for myNumber in ipSeq[0]:
         if myNumber in ipSeq[1]:
             result += 1
@@ -47,6 +53,7 @@ proc score( ipNumber : int): int =
     for myCount in 2 .. ipNumber:
         result *= 2
 
+    #echo fmt("Hits: {ipNumber}, Score{result}")
 
 proc part01() =
 
@@ -92,5 +99,5 @@ proc part02() =
 
 proc execute*() = 
 
-    #part01()
+    part01()
     part02()
