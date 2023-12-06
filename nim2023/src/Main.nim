@@ -1,11 +1,11 @@
 import times
-
+import std/strformat
 
 #import Day01
 #import Day02
 #import Day03
-import Day04
-#import Day05_2023
+#import Day04
+import Day05
 #import Day06_2023
 #import Day06_2023
 #import Day07_2023
@@ -27,17 +27,23 @@ import Day04
 #import Day23_2023
 #import Day24_2023
 #import Day25_2023
-
+proc test() =
+    if 3 in 1 .. 3:
+        echo fmt"3 in range"
+    else:
+        echo fmt"3 not in range"
 
 when isMainModule:
+
+  test()
 
   var myTime:float = cpuTime()
 
   #Day01.execute()
   #Day02.execute()
   #Day03.execute()
-  Day04.execute()
-  #Day05_2023.execute()
+  #Day04.execute()
+  Day05.execute()
   #Day06_2023.execute()
   #Day07_2023.execute()
   #Day08_2023.execute()
