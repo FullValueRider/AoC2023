@@ -15,4 +15,9 @@ Now I'm crinkley and tossed on the scrapheap of life, its more about stopping my
 |1|19.5 ms|47 ms|  
 |2|7.8 ms|47 ms|  
 |3|265 ms|29 ms|
-|4|265 s| ?? |
+|4|265 s| 480 s |
+|5*|35ms|8 msec|  
+|6|0 msec|0 msec |  
+
+* Solution for part 2 works for the test case but take too long for the problem data
+
