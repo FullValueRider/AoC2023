@@ -70,4 +70,4 @@ proc part02() =
 proc execute*() = 
 
     part01()
-    part02()
+    #part02()
