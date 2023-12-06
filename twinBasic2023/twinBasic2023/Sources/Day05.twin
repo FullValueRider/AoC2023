@@ -1,0 +1,126 @@
+'========1=========2=========3=========4=========5=========6=========7=========8=========9=========A=========B=========
+Class Day05
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today                         As String = "\2023\Day05.txt"
+    Private Const MAX_LONGLONG                  As LongLong = &H7FFFFFFFFFFFFFFF
+
+    Private Type State
+        Seeds                                   As Seq
+        Maps                                    As Seq
+    End Type
+
+    Private s                                   As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        'Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+        ' we have a list of inputs (seeds) and a set of transformation tables.
+        ' the transformation tables are applied the the order in which they appear in the s.Maps variable
+        ' if an input does not appear in the transformation table thn the input is the output.
+        Initialise
+        
+        Dim myResult As LongLong = &H7FFFFFFFFFFFFFFF
+        Dim mySeed As Variant
+        Dim myLocation As LongLong = 0
+        
+        For Each mySeed In s.Seeds
+        	'Debug.Print mySeed,
+        	myLocation = GetSeedLocation(VBA.CLngLng(mySeed))
+            'Debug.Print "myLocation", myLocation
+            myResult = IIf(myLocation < myResult, myLocation, myResult)
+        Next
+        
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "227653707", myResult)
+        
+    End Sub
+    
+
+    Private Sub Part02()
+        '1 . we have a sequence of seed ranges. 
+        '2. we wish to know which seed corresponds to the lowest output
+        '3. the input and output ranges are non contiguous
+        '4. input and output ranges always increase
+        '5. but output range may be lowe then the input range
+        ' therefore for each seed range
+        Initialise
+        Dim myResult As LongLong = &H7FFFFFFFFFFFFFFF
+        
+        
+        
+        Dim myLocation As LongLong = 0
+       
+        Dim mySeed As LongLong
+        ' For Each mySeed mySeed = myRange(0) To myRange(1)
+        '     'Debug.Print mySeed,
+        '     myLocation = GetSeedLocation(mySeed)
+        '     'Debug.Print "myLocation", myLocation
+        '     myResult = IIf(myLocation < myResult, myLocation, myResult)
+        ' Next
+    
+    
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "54087", myResult
+
+    End Sub
+
+    Private Sub Initialise()
+        
+        Dim tmpData As Seq = Seq(VBA.Split(GetFileAsString(AoCData & Today), vbCrLf & vbCrLf))
+        Set s.Seeds = Seq(VBA.Split(tmpData.Item(1), " "))
+        s.Seeds.Remove 1
+        tmpData.Remove 1
+        
+        Dim myMap As Variant
+        Set s.Maps = Seq.Deb
+        For Each myMap In tmpData
+        
+        	Dim tmpMap As Seq = Seq(VBA.Split(myMap, vbCrLf))
+            Dim myIndex As Long
+            For myIndex = 2 To tmpMap.Count
+            	Dim myA As Variant = VBA.Split(tmpMap.Item(myIndex))
+                Dim myx As LongLong = VBA.CLngLng(myA(0))
+                Dim myY As LongLong = VBA.CLngLng(myA(1))
+                Dim myZ As LongLong = VBA.CLngLng(myA(2))
+                ' convert x,y,z to x,x+z-1, y, y+z-1
+            	Set tmpMap.Item(myIndex) = Seq(Array(myY, myY + myZ - 1, myx - myY))
+                
+            Next
+            s.Maps.Add tmpMap
+        Next
+        
+    End Sub
+
+
+    Private Function GetSeedLocation(ByVal ipSeed As LongLong) As LongLong
+    	
+        Dim myLoc As LongLong = ipSeed
+        Dim myMap As Variant
+        For Each myMap In s.Maps
+        	'Debug.Print myMap.Item(1)
+        	Dim myIndex As LongLong
+            For myIndex = 2 To myMap.count
+            	
+                	If myLoc >= myMap.Item(myIndex).Item(1) And myLoc <= myMap.Item(myIndex).Item(2) Then
+                    	'Debug.Print "Mapping ", myLoc,
+                    	myLoc = myLoc + myMap.Item(myIndex).Item(3)
+                        'Debug.Print " to ", myLoc
+                        Exit For
+                    Else
+                        'Debug.Print " Pass as", myLoc
+                	End If
+                
+            Next
+        Next
+        Return myLoc
+    End Function
+    
+End Class

@@ -1,0 +1,108 @@
+Class Day06
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today             As String = "\2023\Day06.txt"
+    
+    Private Type State
+        Data                            As Variant
+    End Type
+
+    Private s                           As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+        ' Which press durations give a distance greater than the previous maximum distance
+        ' duration of push = speed of boat for remaining duration of race
+        ' therefore the distance travelled for each length of push is
+        ' Duraction of race - Duration of push) * duraction of push
+        ' This is a quadratic equation 
+        ' -Press^2 + Duration of race * Press - previous maximum distance
+        ' with coefficients of
+        ' a = -1
+        ' b = duration of race
+        ' c = (- previous maximum distance)
+        ' i,e, (-time +/- sqrt(time^2 - 4 * (-1) * (-distance)))/(2 * (-1))
+        '  This gives two roots (durations of presses).  ie. (-b+xxxx)/-2 (positive root) and (-b-xxxxx)/-2 (negative root)
+        ' The positive root is rounded up to give the shortest push to win the race
+        ' the negative root is rounded down to give the longest push to win the raace
+        
+        Initialise
+        
+        Dim myResult As LongLong = 1
+        
+        Dim myIndex As Long
+        For myIndex = 1 To s.Data.count
+        	Dim myMintime As LongLong = getTimeRange(s.Data.Item(myIndex))
+            myResult *= myMintime
+        Next
+        
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "781200", myResult)
+        
+    End Sub
+    
+    Private Function getTimeRange(ByRef ipArray As Variant) As LongLong
+    	
+        Dim myTime As LongLong = ipArray(0)
+        Dim myDistance As LongLong = -ipArray(1)
+        
+        Dim myRoot As Double = Sqr(myTime ^ 2 - 4 * (-1) * (myDistance))
+    	Dim myMinPress As Double = (((-myTime) + myRoot) / (-2))
+        Dim myMaxPress As Double = (((-myTime) - myRoot) / (-2))
+        
+        ' deal with rounding when myMaxPress is an integer
+        If Int(myMaxPress) = myMaxPress Then
+        	myMaxPress -= 1
+        End If
+        
+        Return Int(myMaxPress) - Int(myMinPress)
+        
+    End Function
+
+
+    Private Sub Part02()
+        
+        Initialise
+        
+        Dim myResult As LongLong = 0
+        Dim myTime As String = vbNullString
+        Dim myDist As String = vbNullString
+        
+        Dim myIndex As Long
+        For myIndex = 1 To s.Data.count
+            myTime &= VBA.CStr(s.Data.Item(myIndex)(0))
+            myDist &= VBA.CStr(s.Data.Item(myIndex)(1))
+        Next
+        
+        myResult = getTimeRange(Array(VBA.CLngLng(myTime), VBA.CLngLng(myDist)))
+        
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "49240091", myResult
+
+    End Sub
+
+
+    Private Sub Initialise()
+    	
+        Dim myData As Variant = GetFileAsArrayOfStrings(AoCData & Today)
+        Set s.Data = New Collection
+        
+        Dim myTimes As Variant = VBA.Split(Strs.Replacer(VBA.CStr(myData(0)), "  ", " "))
+        Dim myDist As Variant = VBA.Split(Strs.Replacer(VBA.CStr(myData(1)), "  ", " "))
+        
+        Dim myIndex As Long
+        For myIndex = LBound(myTimes) + 1 To UBound(myTimes)
+        	s.Data.add Array(VBA.CLngLng(myTimes(myIndex)), VBA.CLngLng(myDist(myIndex)))
+        Next
+        
+     End Sub
+
+End Class

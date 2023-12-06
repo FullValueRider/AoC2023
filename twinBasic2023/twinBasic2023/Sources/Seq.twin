@@ -1,0 +1,80 @@
+Class Seq
+
+	Implements Collection Via Host
+    '@PredeclaredId
+    '@Exposed
+    
+    [ DefaultMember ]
+    Public Function Deb(Optional ByRef ipItems As Variant) As Seq
+      With New Seq
+        Return .ConstructInstance(ipItems)
+      End With
+    End Function
+    
+    Friend Function ConstructInstance(ByRef ipItems As Variant) As Seq
+    	Set Host = New Collection
+        
+        If VBA.IsMissing(VBA.CVar(ipItems)) Then
+        	Return Me
+        End If
+        
+    	If TypeInfo.IsNotIndexable(ipItems) Then
+        	Err.Raise 17
+    	End If
+        
+        Dim myItem As Variant
+        Select Case True
+        	Case TypeInfo.IsString(ipItems)
+                Dim myIndex As Long
+                For myIndex = 1 To VBA.Len(ipItems)
+                	Host.Add VBA.Mid$(ipItems, myIndex, 1)
+                Next
+                
+            Case VBA.IsArray(ipItems)
+                
+                For Each myItem In ipItems
+                	Host.Add myItem
+                Next
+                
+            Case TypeInfo.IsItemByIndex(ipItems)
+               
+                For Each myItem In ipItems
+                	Host.Add myItem
+                Next
+                
+        End Select
+        
+        Return Me
+        
+    End Function
+    
+    Public Property Get Item(ByVal ipIndex As Long) As Variant
+        If ipIndex < 1 Or ipIndex > Host.Count Then
+        	Return Null
+        Else
+            Return Host.Item(ipIndex)
+        End If
+    	
+    End Property
+
+    Public Property Let Item(ByVal ipIndex As Long, ByVal ipItem As Variant)
+        If ipIndex < 1 Or ipIndex > Host.Count Then
+            Err.Raise 17, "No such index"
+        Else
+            Host.Add ipItem, after:=ipIndex
+            Host.Remove ipIndex
+        End If
+        
+    End Property
+    
+    Public Property Set Item(ByVal ipIndex As Long, ByVal ipItem As Variant)
+        If ipIndex < 1 Or ipIndex > Host.Count Then
+            Err.Raise 17, "No such index"
+        Else
+            Host.Add ipItem, after:=ipIndex
+            Host.Remove ipIndex
+        End If
+        
+    End Property
+    
+End Class
