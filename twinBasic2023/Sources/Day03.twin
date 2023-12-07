@@ -1,0 +1,348 @@
+Class Day03
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today                 As String = "\2023\Day03.txt"
+    
+    Private Const PERIOD                        As Long = &H2E&
+    Private Const ZERO                          As Long = &H30&
+    Private Const NINE                          As Long = &H39&
+    Private Const GEAR                          As Long = &H2A&
+
+    Private Type State
+        Data                                    As Variant
+        Symbols                                 As Collection
+        FirstMin                                As Long
+        FirstMax                                As Long
+        SecondMin                               As Long
+        SecondMax                               As Long
+    End Type
+
+    Private s                                   As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+        ' scan the jagged array for horizontal number sequences
+        ' if any cell surrounding the number has a symbol then
+        ' add that number to the result
+        ' symbols are characters that are not numbers and not "."
+        ' Assumption 1: There are no decimal numbers as the input text contains sequences such as 839.382.543
+        ' Assumption 2: there are only positive numbers so we don't need to deal with -123 where - is minum not a symbol
+        ' Assumption 3: All numbers are decimal so we don't have to deal with &123 being hexadecimal
+        ' Code passes the Test1 but fails with number too low on full data
+        ' Likely that a code sequence such as 123*456 is not being parsed correctly
+        ' 549292 is too low
+        ' Found eror - numbers at end of row are not being detected
+        Initialise
+        
+        Dim myResult As Long = 0
+        Dim myNumbers As Collection = GetNumberList()
+        
+        Dim myNumber As Variant
+        For Each myNumber In myNumbers
+        	myResult += AdjacentNumber(myNumber)
+        Next
+        
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "550934", myResult)
+        
+    End Sub
+    
+
+    Private Sub Part02()
+        ' in part 2 we scan for gears and then check surrounding area for any numbers
+        ' if two numbers are found we multiply then then add that to the result
+        Initialise
+        
+        Dim myResult As Long = 0
+        
+        Dim myGears As Collection = GetGearList()
+        Dim myGear As Variant
+        For Each myGear In myGears
+            myResult += GearRatio(myGear)
+        Next
+        
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "81997870", myResult
+
+    End Sub
+
+    Private Sub Initialise()
+    	
+        ' read in data as an array of strings
+        Dim myData As Variant = GetFileAsArrayOfStrings(AoCData & Today)
+        
+        ' validate that all rows are the same length
+        Dim myLen As Long = VBA.Len(myData(0))
+        Dim myTest As Variant
+        For Each myTest In myData
+        	If VBA.Len(myTest) <> myLen Then
+            	Err.Raise 17, "Rows not of equal length"
+        	End If
+        Next
+        
+        
+        ' convert strings to arrays of longs
+        ReDim s.Data(LBound(myData) To UBound(myData))
+        Dim myRow As Long
+        For myRow = LBound(myData) To UBound(myData)
+            s.Data(myRow) = Strs.ToAscB(myData(myRow))
+        Next
+        
+        'scan for symbols and compile s.symbols
+        Set s.Symbols = New Collection
+        Dim myFirst As Long
+        For myFirst = LBound(s.Data) To UBound(s.Data)
+        	Dim mySecond As Long
+            For mySecond = LBound(s.Data(myFirst)) To UBound(s.Data(myFirst))
+            	
+            	Dim myItem As Long = s.Data(myFirst)(mySecond)
+                
+                If IsPeriod(myItem) Then
+                    Continue For
+                End If
+                
+            	If IsNumeral(myItem) Then
+                	Continue For
+                End If
+                
+                If LacksItem(s.Symbols, myItem) Then
+                	s.Symbols.Add myItem
+                End If
+                
+            Next
+        Next
+        
+        s.FirstMax = UBound(s.Data)
+        s.FirstMin = LBound(s.Data)
+        s.SecondMin = LBound(s.Data(0))
+        s.SecondMax = UBound(s.Data(0))
+    End Sub
+     
+    Private Function GetNumberList() As Collection
+    	Dim myList As Collection = New Collection
+        
+        Dim myFirst As Long
+        For myFirst = LBound(s.Data) To UBound(s.Data)
+        	
+        	Dim mySecond As Long
+            Dim myInNumber As Boolean = False
+            Dim myStart As Long = 0
+            
+            For mySecond = LBound(s.Data(myFirst)) To UBound(s.Data(myFirst))
+            	
+                Dim myItem As Long = s.Data(myFirst)(mySecond)
+                
+                If myInNumber Then
+                	
+                    If IsPeriod(myItem) Or IsSymbol(myItem) Then
+                    	myList.Add Array(myFirst, myStart, mySecond - 1)
+                        myStart = 0
+                        myInNumber = False
+                    End If
+                
+                Else
+                	
+                    If IsNumeral(myItem) Then
+                        myStart = mySecond
+                    	myInNumber = True
+                        
+                    End If
+                    
+                End If
+                
+            Next
+            
+            ' if we are at the end of a row and still in number 
+            If myInNumber Then
+                myList.Add Array(myFirst, myStart, mySecond - 1)
+                myStart = 0
+                myInNumber = False
+            End If
+            
+        Next
+         
+        Return myList
+         
+    End Function
+    
+    
+    Public Function AdjacentNumber(ByRef ipArray As Variant) As Long
+    	
+        Dim myFoundSymbol As Boolean = False
+        
+        Dim myNumber As Long = ParseNumber(ipArray)
+        Dim mySum As Long = 0
+        
+        ' Define a block in S.data for a symbol search
+        Dim myFirstStart As Long = IIf(ipArray(0) = s.FirstMin, ipArray(0), ipArray(0) - 1)
+        Dim myFirstEnd As Long = IIf(ipArray(0) = s.FirstMax, ipArray(0), ipArray(0) + 1)
+        
+        Dim mySecondStart As Long = IIf(ipArray(1) = s.SecondMin, ipArray(1), ipArray(1) - 1)
+        Dim mySecondEnd As Long = IIf(ipArray(2) = s.SecondMax, ipArray(2), ipArray(2) + 1)
+        
+        Dim myFirst As Long
+        For myFirst = myFirstStart To myFirstEnd
+            Dim mySecond As Long
+            For mySecond = mySecondStart To mySecondEnd
+               
+                If IsSymbol(s.Data(myFirst)(mySecond)) Then
+                    myFoundSymbol = True
+                    mySum += myNumber
+                End If
+                
+            Next
+      
+        Next
+    
+        If myFoundSymbol Then
+        	Return mySum
+        Else
+            Return 0
+        End If
+        
+    End Function
+    
+    Private Function GetGearList() As Collection
+        
+        Dim myList As Collection = New Collection
+        
+        Dim myFirst As Long
+        For myFirst = s.FirstMin To s.FirstMax
+            Dim mySecond As Long
+            For mySecond = s.SecondMin To s.SecondMax
+                If IsGear(s.Data(myFirst)(mySecond)) Then
+                    myList.Add Array(myFirst, mySecond)
+                End If
+            Next
+        Next
+        
+        Return myList
+        
+    End Function
+    
+    Private Function GearRatio(ByRef ipArray As Variant) As Long
+    	Dim myGears As Collection = New Collection
+        
+        ' Define a block in S.data for a number search
+        Dim myFirstStart As Long = IIf(ipArray(0) = s.FirstMin, ipArray(0), ipArray(0) - 1)
+        Dim myFirstEnd As Long = IIf(ipArray(0) = s.FirstMax, ipArray(0), ipArray(0) + 1)
+        
+        Dim mySecondStart As Long = IIf(ipArray(1) = s.SecondMin, ipArray(1), ipArray(1) - 1)
+        Dim mySecondEnd As Long = IIf(ipArray(1) = s.SecondMax, ipArray(1), ipArray(1) + 1)
+        
+        ' use do loops as we want to be abe to move indepndently of a for loop control variable
+        Dim myFirst As Long = myFirstStart
+        Do
+        	Dim mysecond As Long = mySecondStart
+            Do
+            	Dim myItem As Long = s.Data(myFirst)(mysecond)
+                'Debug.Print VBA.Chr$(s.Data(myFirst)(mysecond)) ;
+                If IsNumeral(myItem) Then
+                	myGears.Add parseNumberV2(myFirst, mysecond)
+                    'Fmt.Dbg "{0}", myGears
+                End If
+                mysecond += 1
+            Loop Until mysecond > mySecondEnd
+            myFirst += 1
+        Loop Until myFirst > myFirstEnd
+        
+        If myGears.Count = 2 Then
+        	Return myGears.Item(1) * myGears.Item(2)
+        Else
+            Return 0
+        End If
+        
+    End Function
+    
+    Private Function parseNumberV2(ByRef ipFirst As Long, ipSecond As Long) As Long
+    	' we know that we have a numeral at first.second
+       
+        ' but we need to search left and right
+        Dim myNumber As String = VBA.Chr$(s.Data(ipFirst)(ipSecond))
+        
+        Dim myLeft As Long = ipSecond
+  
+        
+        Do While IsNumeral(s.Data(ipFirst)(myLeft - 1))
+            myLeft -= 1
+        	myNumber = VBA.Chr$(s.Data(ipFirst)(myLeft)) & myNumber
+        	
+            If myLeft - 1 < s.SecondMin Then
+            	Exit Do
+            End If
+        Loop
+        
+        Do While IsNumeral(s.Data(ipFirst)(ipSecond + 1))
+            ipSecond += 1
+            myNumber &= VBA.Chr$(s.Data(ipFirst)(ipSecond))
+            
+            If ipSecond + 1 > s.SecondMax Then
+            	    Exit Do
+            End If
+        Loop
+        
+        Return VBA.CLng(myNumber)
+        
+    End Function
+    
+    Private Function HoldsItem(ByRef ipList As Collection, ByVal ipItem As Long) As Boolean
+    	
+    	Dim myItem As Variant
+        For Each myItem In ipList
+        	If myItem = ipItem Then
+            	Return True
+        	End If
+        Next
+        
+        Return False
+        
+    End Function
+    
+    Public Function LacksItem(ByRef ipList As Collection, ByVal ipItem As Long) As Boolean
+    	Return Not HoldsItem(ipList, ipItem)
+    End Function
+    
+    Public Function IsNumeral(ByVal ipItem As Long) As Boolean
+    	If ipItem < ZERO Then
+        	Return False
+        End If
+        If ipItem > NINE Then
+            Return False
+    	End If
+        Return True
+    End Function
+    
+    Public Function IsPeriod(ByVal ipItem As Long) As Boolean
+    	Return ipItem = PERIOD
+    End Function
+    
+    Public Function IsSymbol(ByVal ipItem As Long) As Boolean
+    	Return HoldsItem(s.Symbols, ipItem)
+    End Function
+    
+    
+    ' Public Function IsMinus(ByVal ipItem As Long) As Boolean
+    ' 	Return ipItem = MINUS
+    ' End Function
+    
+    Private Function IsGear(ByVal ipItem As Long) As Boolean
+    	Return ipItem = GEAR
+    End Function
+    
+    Private Function ParseNumber(ByRef ipArray As Variant) As Long
+    	Dim myStr As String = Chars.tbNullStr
+    	Dim mySecond As Long
+        For mySecond = ipArray(1) To ipArray(2)
+        	myStr &= VBA.Chr$(s.Data(ipArray(0))(mySecond))
+        Next
+        Return VBA.CLng(myStr)
+    End Function
+End Class

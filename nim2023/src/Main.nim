@@ -5,10 +5,10 @@ import times
 #import Day02
 #import Day03
 #import Day04
-import Day05
+#import Day05
 #import Day06
 #import Day06_2023
-#import Day07_2023
+import Day07
 #import Day08_2023
 #import Day09_2023
 #import Day010_2023
@@ -37,9 +37,9 @@ when isMainModule:
   #Day02.execute()
   #Day03.execute()
   #Day04.execute()
-  Day05.execute() # part 2 incomplete
+  #Day05.execute() # part 2 incomplete
   #Day06.execute()
-  #Day07_2023.execute()
+  Day07.execute()
   #Day08_2023.execute()
   #Day09_2023.execute()
   #Day10_2023.execute()

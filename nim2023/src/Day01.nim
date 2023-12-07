@@ -1,4 +1,4 @@
-import ../../AoCLib/src/constants
+import ./../../AoCLib/src/constants
 import std/strutils
 import std/strformat
 import std/setutils
