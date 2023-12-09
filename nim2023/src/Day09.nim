@@ -64,8 +64,7 @@ proc part02() =
         while myDeltas.last.areSame(0) == false:
             myDeltas.add(myDeltas.last.delta)
 
-        var myHigh = myDeltas.high
-        for myIndex in countdown(myHigh, 0):
+        for myIndex, mySeq in myDeltas:
             if myIndex == myDeltas.high:
                 myDeltas[myIndex].insert(0,0)
             else:
