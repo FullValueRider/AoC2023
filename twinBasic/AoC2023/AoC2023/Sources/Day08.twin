@@ -1,0 +1,127 @@
+Class Day08
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today             As String = "\2023\Day08.txt"
+    
+    Private Type State
+        LR                              As Seq 'seq of char
+        Map                             As Kvp ' seq of string vs array of two strings
+        EndSteps                        As Seq ' of long
+    End Type
+
+    Private s                           As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+
+        Initialise
+    
+        Dim myResult As Long = GetStepsToEnd("AAA")
+                
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "14257", myResult)
+        
+    End Sub
+    
+    
+    Private Sub Part02()
+        
+        Initialise
+        
+        Dim myResult As Decimal
+        ' find nodes ending in A
+        Dim myANodes As Seq = Seq()
+        Dim myNode As Variant
+        For Each myNode In s.Map.Keys
+            If VBA.Right$(myNode, 1) = "A" Then
+                myANodes.Add myNode
+            End If
+        Next
+        
+        Set s.EndSteps = Seq()
+        For Each myNode In myANodes
+        	s.EndSteps.Add GetStepsToEnd(VBA.CStr(myNode), True)
+        Next
+        
+        Dim myPrimes As Seq = Seq.Deb
+        Dim myPrime As Long = 2
+        Do
+        	
+            If s.EndSteps.ModGetsZero(myPrime) Then
+            	myPrimes.Add myPrime
+                If s.EndSteps.Sum = s.EndSteps.Count Then
+                	Exit Do
+                End If
+            Else
+                myPrime = Maths.NextPrime(myPrime)
+                
+            End If
+        	
+        Loop
+
+        myResult = myPrimes.Lcm
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "16187743689077", myResult
+
+    End Sub
+    
+    
+    Private Function GetStepsToEnd(ByRef ipStart As String, Optional ipLastchar As Boolean = False) As Long
+    	
+        Dim myLoc As String = ipStart
+        Dim myResult As Long = 0
+        Do
+            
+            Dim myMove As Variant
+            For Each myMove In s.LR
+                If myMove = "R" Then
+                    myLoc = s.Map.Item(myLoc)(1)
+                Else
+                    myLoc = s.Map.Item(myLoc)(0)
+                End If
+                
+                myResult += 1
+                
+                If ipLastchar Then
+                	If VBA.Right$(myLoc, 1) = "Z" Then
+                    	Return myResult
+                	End If
+               Else
+                    If myLoc = "ZZZ" Then
+                        Return myResult
+                    End If
+                End If
+                
+            Next
+            
+        Loop
+    End Function
+
+
+    Private Sub Initialise()
+        
+        Dim myData As Variant = VBA.Split(GetFileAsString(AoCData & Today), vbCrLf & vbCrLf)
+        
+        Set s.LR = Seq(VBA.CStr(myData(0)))
+        Set s.Map = Kvp.Deb
+        Dim myMove As Variant
+        For Each myMove In VBA.Split(myData(1), vbCrLf)
+        	
+        	myMove = Replace(myMove, Chars.tbLParen, Chars.tbNullStr)
+            myMove = Replace(myMove, Chars.tbRParen, Chars.tbNullStr)
+            myMove = Split(myMove, " = ")
+            s.Map.Add Trim(myMove(0)), VBA.Split(myMove(1), ", ")
+            
+        Next
+        
+     End Sub
+    
+End Class

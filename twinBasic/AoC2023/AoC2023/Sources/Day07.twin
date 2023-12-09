@@ -1,0 +1,216 @@
+Class Day07
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today             As String = "\2023\Day07.txt"
+    
+    Private Type State
+        ' collectio of Hands
+        Data                            As Kvp
+    End Type
+
+    Private s                           As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+
+        Initialise
+        ' s.Data comprises hands With updated cards And bids
+        ' Hands can be classified in 7 ways
+        ' 0. aaaaa freq buckets = 1 rank = 7
+        ' 1. aaaab freq buckets = 2 rank = 6
+        ' 2. aaabb freq buckets = 2 rank = 5
+        ' 3. aaabc freq buckets = 3 rank = 4
+        ' 4. aabbc freq buckets = 3 rank = 3
+        ' 5. aabcd freq buckets = 4 rank = 2
+        ' 6. abcdef frequ buckets = 5 rank = 1
+        ' Thus assigning a score to a hand Is simple
+        ' The Hands are bucketed according to the above ranks 
+        ' (Not the same rank As discussed in the question)
+        ' the rank applied in the question Is simply a counter.  We Set it to one
+        ' For the first(lowest possible hand) then increase by 1 fo Each
+        ' hand.
+        Dim myResult As Long = 0
+        Dim myHand As Variant
+        ' Each seq corresponds to a rank bucket
+        Dim myRanked As Seq = Seq(Array(Seq(), Seq(), Seq(), Seq(), Seq(), Seq(), Seq()))
+       
+        For Each myHand In s.Data.Keys
+        	
+            Dim myRank As Long = GetRank(VBA.CStr(myHand))
+            
+            myRanked.Item(myRank).add myHand
+            
+        Next
+        
+        ' now sort the buckets in rankbuckets
+        Dim myIndex As Long
+        For myIndex = 1 To myRanked.Count
+        	Set myRanked.Item(myIndex) = myRanked.Item(myIndex).sort
+        Next
+        
+        ' the buckets are now sorted so we proceed from bucket 1 to bucket 7
+        ' multiply item within each bucket my a mutiplier which increases by 1 for each item processed.
+        Dim myMultiplier As Long = 1
+        Dim myRankBucket As Long
+        For myRankBucket = 1 To myRanked.Count
+        	Dim myItem As Variant
+            For Each myItem In myRanked.Item(myRankBucket)
+        	    myResult += s.Data.Item(myItem) * myMultiplier
+                myMultiplier += 1
+            Next
+        Next
+        
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "250946742", myResult)
+        
+    End Sub
+    
+
+    Private Sub Part02()
+        
+        ' In part two we have jokers so we have a second substitution to 
+        ' replace "b" with "0".
+        
+        Initialise
+        Dim myResult As Long = 0
+        Dim myRanked As Seq = Seq(Array(Seq(), Seq(), Seq(), Seq(), Seq(), Seq(), Seq()))
+        
+        ' Remap hands to use jokers
+        Dim myJHands As Kvp = Kvp.Deb
+        Dim myHand As Variant
+        For Each myHand In s.Data.Keys
+        	myJHands.Add VBA.Replace(myHand, "b", "0"), s.Data.Item(myHand)
+        Next
+        
+        
+         For Each myHand In myJHands.Keys
+            
+            ' we need to adjust the strategy compared to part 1 but the 
+            ' ranking essentially works the same
+            Dim myRank As Long = GetJokeredRank(myHand)
+            myRanked.Item(myRank).add myHand
+            
+        Next
+        
+        ' now sort the in each rank bucket
+        Dim myIndex As Long
+        For myIndex = 1 To myRanked.Count
+            Set myRanked.Item(myIndex) = myRanked.Item(myIndex).sort
+        Next
+        
+        ' the buckets are now sorted so we proceed from bucket 1 to bucket 7
+        ' multiply item within each bucket my a mutiplier which increases by 1 for each item processed.
+        Dim myMultiplier As Long = 1
+        Dim myRankBucket As Long
+        For myRankBucket = 1 To myRanked.Count
+            Dim myItem As Variant
+            For Each myItem In myRanked.Item(myRankBucket)
+                myResult += myJHands.Item(myItem) * myMultiplier
+                myMultiplier += 1
+            Next
+        Next
+        
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "251824095", myResult
+
+    End Sub
+
+    Private Sub Initialise()
+    	' to make a hand easily sortable we replace T,J,Q,K,A, with charcters in order of precedence
+    	
+        Dim myData As Variant = GetFileAsArrayOfStrings(AoCData & Today)
+        Dim myItem As Variant
+        Set s.Data = Kvp.Deb
+        'Set s.Bids = New Collection
+        
+        For Each myItem In myData
+      
+        	Dim myA As Variant = VBA.Split(myItem)
+            Dim myStr As String = myA(0)
+            ' To enable simple sorting of the hand characters we replace the TJQKA symbols with symbols that sort nicely ABCDE
+            ' do the substitution in an order that avoid a double substitutions e.g. T -> A, A>E
+            myStr = Replace(myStr, "J", "B")
+            myStr = Replace(myStr, "Q", "C")
+            myStr = Replace(myStr, "K", "D")
+            myStr = Replace(myStr, "A", "E")
+            myStr = Replace(myStr, "T", "A")
+            
+            ' it should be noted that all replacements above end up with a lower case character
+            ' having checked , there are no duplicate sequences of cards in the raw data
+            ' there are duplicate sets of cards if the sorted hands are compared
+            ' but the question specifies comparison of hand using the cards in the order of the input data
+            s.Data.Add key:= myStr, item:= myA(1)
+            
+        Next
+        
+     End Sub
+     
+     Public Function GetRank(ByVal ipHand As String) As Long
+     	
+     	' COnvert the nad string to a dictionary of character vs count
+        Dim myFreq As Scripting.Dictionary = Seq(ipHand).Freq
+        
+        'For part 1 we need only the frequency counts
+        ' sorting the counts in reverse order (highest count at Item(1))
+        Dim myCounts As Seq = Seq(myFreq.Items).Sort.Reverse
+        
+        Select Case myFreq.Count
+        	Case 1:     Return 7
+            Case 2:     Return IIf(myCounts.Item(1) = 4, 6, 5)
+            Case 3:     Return IIf(myCounts.Item(1) = 3, 4, 3)
+            Case 4:     Return 2
+            Case 5:     Return 1
+            Case Else
+               Debug.Print "Unexpected Hand " & ipHand
+        End Select
+        
+     End Function
+     
+     Public Function GetJokeredRank(ByVal ipHand As String) As Long
+     	
+        ' if no jokers get the rank as normal hand
+        If InStr(ipHand, "0") = 0 Then
+        	Return GetRank(ipHand)
+        End If
+        
+        ' code below only needs to consider hands with the joker
+        ' remove jokers from hand
+        Dim myHand As Seq = Seq(VBA.Replace(ipHand, "0", vbNullString))
+        Dim myJokers As Long = 5 - myHand.Count
+        
+        ' if the card count is 5 we have 5 jokers which scores a rank of 7
+        If myJokers = 5 Then
+        	Return 7
+        End If
+        
+        ' calculate frequency of remaining characters
+        Dim myFreq As Kvp = myHand.Freq()
+    
+        ' Get the key "character" with the max count in freq
+        ' We may have more than one character with the max score
+        ' so get the last ma count
+        ' we have serendipity here as the chars just happed to be in increasing order.
+        Dim myMaxKey As Variant = myFreq.LastKeyOfMaxItem
+        ' update the character determined to be the best to add the jokers to
+        myFreq.Item(myMaxKey) += myJokers
+        Dim myCounts As Seq = Seq(myFreq.Items).Sort.Reverse
+    
+        Select Case myFreq.Count
+            Case 1:     Return 7
+            Case 2:     Return IIf(myCounts.Item(1) = 4, 6, 5)
+            Case 3:     Return IIf(myCounts.Item(1) = 3, 4, 3)
+            Case 4:     Return 2
+            Case 5:     Return 1
+            Case Else
+                Debug.Print "Unexpected Hand " & ipHand
+        End Select
+     End Function
+End Class

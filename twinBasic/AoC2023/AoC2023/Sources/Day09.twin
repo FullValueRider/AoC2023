@@ -1,0 +1,117 @@
+Class Day09
+
+    Option Explicit
+    '@PredeclaredId
+    '@Exposed
+    Private Const Today                 As String = "\2023\Day09.txt"
+    
+    Private Type State
+        Data                            As Seq
+    End Type
+
+    Private s                           As State
+
+    
+    Public Sub Execute()
+        
+        Part01
+        Part02
+            
+    End Sub
+
+ 
+    Private Sub Part01()
+
+        Initialise
+        
+        Dim myResult As Long = 0
+        
+        Dim myItem As Variant
+        
+        For Each myItem In s.Data
+        	
+            Dim myDiffers As Seq = Seq()
+            myDiffers.Add Seq(myItem.Items)
+        
+            Do Until myDiffers.Last.aresame(Of Long)(0)
+        	    myDiffers.Add myDiffers.Last.delta
+            Loop
+            
+            Dim myIndex As Long
+            For myIndex = myDiffers.Count To 1 Step -1
+            	
+                If myIndex = myDiffers.Count Then
+                	myDiffers.Item(myIndex).add 0
+                    Continue For
+                End If
+                Dim myAdd As Long = myDiffers.Item(myIndex + 1).last + myDiffers.Item(myIndex).last
+                myDiffers.Item(myIndex).add myAdd
+                
+            Next
+            
+            myResult += myDiffers.First.last
+            
+        Next
+        
+        
+                
+        Debug.Print Fmt.Text("The answer to Day {0} part 1 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "1798691765", myResult)
+        
+    End Sub
+    
+    
+    Private Sub Part02()
+        
+        Initialise
+        Dim myResult As Long = 0
+        Dim myItem As Variant
+        
+        For Each myItem In s.Data
+            
+            Dim myDiffers As Seq = Seq()
+            myDiffers.Add Seq(myItem.Items)
+        
+            Do Until myDiffers.Last.aresame(Of Long)(0)
+                myDiffers.Add myDiffers.Last.delta
+            Loop
+            
+            Dim myIndex As Long
+            For myIndex = myDiffers.Count To 1 Step -1
+                
+                If myIndex = myDiffers.Count Then
+                    myDiffers.Item(myIndex).add 0, before:= 1
+                    Continue For
+                End If
+                Dim myAdd As Long = myDiffers.Item(myIndex).first - myDiffers.Item(myIndex + 1).first
+                myDiffers.Item(myIndex).add myAdd, before:=1
+                
+            Next
+            
+            myResult += myDiffers.First.first
+            
+        Next
+        
+
+        Fmt.Dbg "The answer to Day {0} part 2 is {1}.  Found is {2}", VBA.Mid$(Today, 10, 2), "1104", myResult
+
+    End Sub
+
+    
+    Private Sub Initialise()
+        
+        Dim myData As Variant = GetFileAsArrayOfStrings(AoCData & Today)
+        
+        Set s.Data = Seq()
+        Dim myItem As Variant
+        For Each myItem In myData
+        	Dim myS As Seq = Seq(VBA.Split(myItem))
+            Dim myIndex As Long
+            For myIndex = 1 To myS.Count
+            	myS.Item(myIndex) = VBA.CLng(myS.Item(myIndex))
+            Next
+        	s.Data.Add Seq(myS.Items)
+        Next
+        
+     End Sub
+     
+End Class
